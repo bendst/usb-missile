@@ -1,1 +1,12 @@
 # Was wissen wir über das Gerät?
+
+Befehle für Bewegungen, Feuern und LED in Hex-Format (Anwendung in: frontends.md -> nmilford):
+Stop 0x02, 0x00
+Down 0x02, 0x01
+Up 0x02, 0x02
+Left  0x02, 0x04
+Right 0x02, 0x08
+Kobminationen aus Bewegung über Verundung des letzten Hexwertes. Z.B. Down-Left 0x02, 0x05
+Fire 0x02, 0x10
+LED off 0x03, 0x00
+LED on 0x03, 0x01
