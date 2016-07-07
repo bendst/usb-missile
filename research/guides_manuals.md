@@ -4,3 +4,4 @@
 - http://tldp.org/LDP/lkmpg/2.6/html/lkmpg.html für den Linux 2.6 Kernel
 
 ### Aktuelle
+- http://matthias.vallentin.net/blog/2007/04/writing-a-linux-kernel-driver-for-an-unknown-usb-device/
