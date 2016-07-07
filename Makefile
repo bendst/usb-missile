@@ -1,5 +1,5 @@
 ifneq ($(KERNELRELEASE),)
-	obj-m := hallo.o
+	obj-m := usb-missile.o
 else
 KDIR := /lib/modules/$$(uname -r)/build/ 
 all:

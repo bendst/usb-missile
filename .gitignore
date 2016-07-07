@@ -31,3 +31,12 @@
 # Debug files
 *.dSYM/
 *.su
+*.swp
+*.swo
+*.cmd
+
+
+# Other
+*.mod.c
+__pycache__
+.*
