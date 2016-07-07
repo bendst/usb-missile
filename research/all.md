@@ -1,8 +1,8 @@
 # Was wissen wir über das Gerät?
 
 Hardware-Device-IDs  
-Vendor: 2123  
-Product: 1010
+Vendor: 0x2123  
+Product: 0x1010
 
 Befehle für Bewegungen, Feuern und LED in Hex-Format (Anwendung in: frontends.md -> nmilford):  
 Stop 0x02, 0x00  
