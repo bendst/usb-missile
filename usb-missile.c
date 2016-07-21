@@ -49,7 +49,7 @@ struct usb_missile {
 };
 
 static void execute_order(struct usb_missile *missile) {
-
+    // TODO Alles
     unsigned char order = Stop;
 
     switch (missile->direction) {
@@ -87,7 +87,7 @@ static void execute_order(struct usb_missile *missile) {
 
 static int missile_probe(struct usb_interface *interface,
                          const struct usb_device_id *id) {
-    // devices erstellen
+    // TODO devices erstellen
     dev_info(&interface->dev, "Connected");
     return 0;
 }
@@ -98,7 +98,7 @@ static void missile_disconnect(struct usb_interface *interface) {
     dev = usb_get_intfdata(interface);
     usb_set_intfdata(interface, NULL);
 
-    // erstelte Devices in Probe wieder löschen
+    // TODO erstelte Devices in Probe wieder löschen
 
 
     usb_put_dev(dev->udev);
