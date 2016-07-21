@@ -87,9 +87,30 @@ static void execute_order(struct usb_missile *missile) {
 
 static int missile_probe(struct usb_interface *interface,
                          const struct usb_device_id *id) {
+    struct usb_device *udev = interface_to_usbdev(interface);
+    struct usb_missile *dev = NULL;
+    int result = -ENOMEM; 
+
+    dev = kmalloc(sizeof(struct usb_missile), GFP_KERNEL);
+    if (dev == NULL) {
+        dev_err(&interface->dev, "OOM\n");
+        goto error;
+    }
+    memset(dev, 0, sizeof(struct usb_missile));
+    dev->udev = usb_get_intfdata(udev);
+    usb_set_intfdata(interface, dev);
+
+
     // TODO devices erstellen
+
+
     dev_info(&interface->dev, "Connected");
     return 0;
+
+error:
+    // Ist das wirklich notwendig?
+    kfree(dev);
+    return result;
 }
 
 static void missile_disconnect(struct usb_interface *interface) {
@@ -97,6 +118,7 @@ static void missile_disconnect(struct usb_interface *interface) {
 
     dev = usb_get_intfdata(interface);
     usb_set_intfdata(interface, NULL);
+
 
     // TODO erstelte Devices in Probe wieder löschen
 
