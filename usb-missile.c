@@ -22,7 +22,7 @@ static struct usb_device_id id_table[] = {
     {},
 };
 
-
+// Ein enum fängt bei 0 an.
 enum Direction {
     Stop,
     Down,
@@ -49,7 +49,7 @@ struct usb_missile {
 };
 
 static void execute_order(struct usb_missile *missile) {
-
+    // TODO Alles
     unsigned char order = Stop;
 
     switch (missile->direction) {
@@ -87,15 +87,24 @@ static void execute_order(struct usb_missile *missile) {
 
 static int missile_probe(struct usb_interface *interface,
                          const struct usb_device_id *id) {
-
-    // devices erstellen
+    // TODO devices erstellen
+    dev_info(&interface->dev, "Connected");
     return 0;
 }
 
 static void missile_disconnect(struct usb_interface *interface) {
-    // erstelte Devices in Probe wieder löschen
-}
+    struct usb_missile *dev;
 
+    dev = usb_get_intfdata(interface);
+    usb_set_intfdata(interface, NULL);
+
+    // TODO erstelte Devices in Probe wieder löschen
+
+
+    usb_put_dev(dev->udev);
+    kfree(dev);
+    dev_info(&interface->dev, "Disconnect");
+}
 
 static struct usb_driver missile_driver = {
     .name = "usb_missile",
