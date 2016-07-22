@@ -12,6 +12,7 @@
 
 #define LED_PREFIX 0x03
 #define MV_PREFIX 0x02
+#define BUF_SIZE 8
 
 // https://www.kernel.org/doc/htmldocs/usb/API-usb-control-msg.html
 #define REQUEST_TYPE 0x21   // ungetest
@@ -100,7 +101,7 @@ static void execute_order(struct usb_missile *missile, enum Which which) {
     int value = 0;
     int index = 0;
 
-    buf = kzalloc(8, GFP_KERNEL);
+    buf = kzalloc(BUF_SIZE, GFP_KERNEL);
     if (buf == NULL) {
         dev_err(&missile->udev->dev, "OOM");
         return;
@@ -121,9 +122,9 @@ static void execute_order(struct usb_missile *missile, enum Which which) {
         break;
 
     }
-    
+
     // TODO richtiges timeout noch herausfinden
-    result = usb_control_msg(missile->udev, usb_sndctrlpipe(missile->udev, 0), REQUEST, REQUEST_TYPE, value, index, buf, 8, 2 * HZ);
+    result = usb_control_msg(missile->udev, usb_sndctrlpipe(missile->udev, 0), REQUEST, REQUEST_TYPE, value, index, buf, BUF_SIZE, 2 * HZ);
     if (result < 0) {
         dev_err(&missile->udev->dev, "could not send data, direction: %d, led: %d\n", missile->direction, missile->led);
     }
@@ -146,22 +147,6 @@ action(Fire);
 
 led(On);
 led(Off);
-
-
-static ssize_t show_dummy(struct device *dev, struct device_attribute *attr, char *buf) {
-    dev_dbg(dev, "%d\n", 42);
-    return sprintf(buf, "\n");
-}
-
-
-static ssize_t store_dummy(struct device *dev, struct device_attribute *attr, const char *buf, size_t count) {
-    //struct usb_missile *missile = usb_get_intfdata(to_usb_interface(dev));
-
-    return count;
-}
-
-
-static DEVICE_ATTR(dummy, S_IWUSR | S_IRUSR, show_dummy, store_dummy);
 
 
 static int missile_probe(struct usb_interface *interface,
@@ -197,7 +182,7 @@ static void missile_disconnect(struct usb_interface *interface) {
 
     dev = usb_get_intfdata(interface);
     usb_set_intfdata(interface, NULL);
-    
+
     // Alle Devices wieder löschen
     remove_all;
 
