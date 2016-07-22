@@ -1,5 +1,3 @@
-#include <linux/init.h>
-
 #include <linux/slab.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -19,24 +17,43 @@
 #define REQUEST_TYPE 0x21   // ungetest
 #define REQUEST 0x09        // ungetest
 
-#define function(name) \
-    static ssize_t show_##name(struct device *dev, struct device_attribute *attr, char *buf) { \
+#define function(name, which) \
+    static ssize_t show_ ## name(struct device *dev, struct device_attribute *attr, char *buf) { \
         struct usb_missile *missile = usb_get_intfdata(to_usb_interface(dev)); \
         printk("%s\n", #name); \
-        return sprintf(buf, "%d\n", missile->direction); \
+        if (which == Movement) { \
+            return sprintf(buf, "%d\n", missile->direction); \
+        } else if (which == Led) { \
+            return sprintf(buf, "%d\n", missile->led); \
+        } else { \
+            return sprintf(buf, "%d\n", 1); \
+        } \
     } \
-    static ssize_t store_##name(struct device *dev, struct device_attribute *attr, const char *buf, size_t count) { \
+    static ssize_t store_ ## name(struct device *dev, struct device_attribute *attr, const char *buf, size_t count) { \
         struct usb_missile *missile = usb_get_intfdata(to_usb_interface(dev)); \
-        missile->direction = name; \
-        execute_order(missile); \
+        if (which == Movement) { \
+            missile->direction = name; \
+        } else if (which == Led) { \
+            missile->led = name; \
+        } else { \
+            missile->direction = Stop; \
+            missile->led = Off; \
+        } \
+        execute_order(missile, which); \
         return count; \
     } \
-    static DEVICE_ATTR(name, S_IRUSR | S_IWUSR, show_##name, store_##name);
+    static DEVICE_ATTR(name, S_IRUSR | S_IWUSR, show_ ## name, store_ ## name);
 
+
+#define movement(name) function(name, Movement)
+#define action(name) function(name, Fire)
+#define led(name) function(name, Led)
+
+// TODO mögliche Fehler abfangen
 #define create(name) device_create_file(&interface->dev, &dev_attr_ ## name)
-#define create_all  create(Stop); create(Down); create(Up); create(Left); create(Right); create(UpLeft); create(UpRight); create(DownLeft); create(DownRight)
+#define create_all  create(Stop); create(Down); create(Up); create(Left); create(Right); create(UpLeft); create(UpRight); create(DownLeft); create(DownRight); create(Fire); create(On); create(Off)
 #define remove(name) device_remove_file(&interface->dev, &dev_attr_ ## name)
-#define remove_all remove(Stop); remove(Down); remove(Up); remove(Left); remove(Right); remove(UpLeft); remove(UpRight);  remove(DownLeft); remove(DownRight)
+#define remove_all remove(Stop); remove(Down); remove(Up); remove(Left); remove(Right); remove(UpLeft); remove(UpRight);  remove(DownLeft); remove(DownRight); remove(Fire); remove(On); remove(Off)
 
 static struct usb_device_id id_table[] = {
     {USB_DEVICE(VENDOR_ID, PRODUCT_ID)},
@@ -68,68 +85,67 @@ struct usb_missile {
     struct usb_device *udev;
     enum Direction direction;
     enum Led led;
-    unsigned char fire;
 };
 
-static void execute_order(struct usb_missile *missile) {
-    // TODO Alles
-    unsigned char order = Stop;
+enum Which {
+    Led,
+    Movement,
+    Fire
+};
 
-    unsigned char *buf;
+static void execute_order(struct usb_missile *missile, enum Which which) {
+    int result = 0;
+    unsigned char *buf = NULL;
+    // TODO müssen gucken ob das stimmt, pylibusb macht das so und auch der frontend-launcher
+    int value = 0;
+    int index = 0;
 
     buf = kzalloc(8, GFP_KERNEL);
-    if (!buf) {
+    if (buf == NULL) {
         dev_err(&missile->udev->dev, "OOM");
         return;
     }
 
-    switch (missile->direction) {
-    case Down:
+    switch (which) {
+    case Movement:
+        buf[0] = MV_PREFIX;
+        buf[1] = missile->direction;
         break;
-    case Up:
-        break;
-    case Left:
-        break;
-    case Right:
-        break;
-    case UpLeft:
-        break;
-    case DownLeft:
-        break;
-    case UpRight:
-        break;
-    case DownRight:
-        break;
-    default:
-        order = Stop;
-        break;
-    }
-
-    switch (missile->led) {
-    case Off:
-        break;
-    case On:
-        break;
+    case Led:
+        buf[0] = LED_PREFIX;
+        buf[1] = missile->led;
+    case Fire:
+        buf[0] = MV_PREFIX;
+        buf[1] = 0x10;
     default:
         break;
+
     }
-
-
-    //usb_control_msg(missile->udev, usb_sndctrlpipe(missile->udev, 0), REQUEST, REQUEST_TYPE, value, index, buf, 8, 2 * HZ);
+    
+    // TODO richtiges timeout noch herausfinden
+    result = usb_control_msg(missile->udev, usb_sndctrlpipe(missile->udev, 0), REQUEST, REQUEST_TYPE, value, index, buf, 8, 2 * HZ);
+    if (result < 0) {
+        dev_err(&missile->udev->dev, "could not send data, direction: %d, led: %d\n", missile->direction, missile->led);
+    }
 
     kfree(buf);
 }
 
 
-function(Up);
-function(Down);
-function(Left);
-function(Right);
-function(UpLeft);
-function(UpRight);
-function(DownRight);
-function(DownLeft);
-function(Stop);
+movement(Up);
+movement(Down);
+movement(Left);
+movement(Right);
+movement(UpLeft);
+movement(UpRight);
+movement(DownRight);
+movement(DownLeft);
+movement(Stop);
+
+action(Fire);
+
+led(On);
+led(Off);
 
 
 static ssize_t show_dummy(struct device *dev, struct device_attribute *attr, char *buf) {
@@ -139,7 +155,7 @@ static ssize_t show_dummy(struct device *dev, struct device_attribute *attr, cha
 
 
 static ssize_t store_dummy(struct device *dev, struct device_attribute *attr, const char *buf, size_t count) {
-    //struct usb_missile *missile = usb_get_intfdata(to_usb_interface(dev)); 
+    //struct usb_missile *missile = usb_get_intfdata(to_usb_interface(dev));
 
     return count;
 }
@@ -162,11 +178,8 @@ static int missile_probe(struct usb_interface *interface,
 
     dev->udev = usb_get_dev(udev);
     usb_set_intfdata(interface, dev);
-
-    device_create_file(&interface->dev, &dev_attr_dummy);
-    // TODO devices erstellen
+    // Alle benötigen Devices erstellen
     create_all;
-
 
     dev_info(&interface->dev, "Connected\n");
     return 0;
@@ -184,9 +197,8 @@ static void missile_disconnect(struct usb_interface *interface) {
 
     dev = usb_get_intfdata(interface);
     usb_set_intfdata(interface, NULL);
-
-    device_remove_file(&interface->dev, &dev_attr_dummy);
-    // TODO erstelte Devices in Probe wieder löschen
+    
+    // Alle Devices wieder löschen
     remove_all;
 
     usb_put_dev(dev->udev);

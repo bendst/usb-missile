@@ -5,18 +5,21 @@
 
 # This script requires:
 # * python-usb
-# * The ImageTk library. On Debian/Ubuntu 'sudo apt-get install python-imaging-tk'
+# * The ImageTk library. On Debian/Ubuntu 'sudo apt-get install 
+# python-imaging-tk'
 # Also, unless you want to toggle with udev rules, it needs to be run as root
-
-# Use arrows to aim. Use the left enter to fire. More functions watch "Control"-section
+# Use arrows to aim. Use the left enter to fire. More functions watch 
+# "Control"-section
 
 import os
 import sys
 import time
 import usb.core
-from Tkinter import * # GUI-Bibliothek
+from Tkinter import *  # GUI-Bibliothek
+import Tkinter
 
-class launchControl(Frame):
+
+class launchControl(Tkinter.Frame):
 
 	def __init__(self):
 
@@ -91,7 +94,7 @@ class launchControl(Frame):
 		
 
 	def turnKeyReleased(self, event):
-		self.directionByte -= self.directionToBitDic.get(event.keysym)
+        self.directionByte -= self.directionToBitDic.get(event.keysym)
 		self.turretTurn();
 
 
