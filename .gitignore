@@ -40,3 +40,5 @@
 *.mod.c
 __pycache__
 .*
+Module.symvers
+modules.order
