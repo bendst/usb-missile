@@ -38,7 +38,7 @@
             missile->led = name; \
         } else { \
             missile->direction = Stop; \
-            missile->led = Off; \
+            missile->led = LedOff; \
         } \
         execute_order(missile, which); \
         return count; \
@@ -52,9 +52,9 @@
 
 // TODO mögliche Fehler abfangen
 #define create(name) device_create_file(&interface->dev, &dev_attr_ ## name)
-#define create_all  create(Stop); create(Down); create(Up); create(Left); create(Right); create(UpLeft); create(UpRight); create(DownLeft); create(DownRight); create(Fire); create(On); create(Off)
+#define create_all  create(Stop); create(Down); create(Up); create(Left); create(Right); create(UpLeft); create(UpRight); create(DownLeft); create(DownRight); create(Fire); create(LedOn); create(LedOff)
 #define remove(name) device_remove_file(&interface->dev, &dev_attr_ ## name)
-#define remove_all remove(Stop); remove(Down); remove(Up); remove(Left); remove(Right); remove(UpLeft); remove(UpRight);  remove(DownLeft); remove(DownRight); remove(Fire); remove(On); remove(Off)
+#define remove_all remove(Stop); remove(Down); remove(Up); remove(Left); remove(Right); remove(UpLeft); remove(UpRight);  remove(DownLeft); remove(DownRight); remove(Fire); remove(LedOn); remove(LedOff)
 
 static struct usb_device_id id_table[] = {
     {USB_DEVICE(VENDOR_ID, PRODUCT_ID)},
@@ -77,8 +77,8 @@ enum Direction {
 
 
 enum Led {
-    Off,
-    On
+    LedOff,
+    LedOn
 };
 
 
@@ -115,6 +115,7 @@ static void execute_order(struct usb_missile *missile, enum Which which) {
     case Led:
         buf[0] = LED_PREFIX;
         buf[1] = missile->led;
+		break;
     case Fire:
         buf[0] = MV_PREFIX;
         buf[1] = 0x10;
@@ -145,8 +146,8 @@ movement(Stop);
 
 action(Fire);
 
-led(On);
-led(Off);
+led(LedOn);
+led(LedOff);
 
 
 static int missile_probe(struct usb_interface *interface,
@@ -204,4 +205,3 @@ module_usb_driver(missile_driver);
 MODULE_AUTHOR(DRIVER_AUTHOR);
 MODULE_DESCRIPTION(DRIVER_DESC);
 MODULE_LICENSE("GPL");
-
