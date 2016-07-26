@@ -116,6 +116,7 @@ static void execute_order(struct usb_missile *missile, enum Which which)
 	case Led:
 		buf[0] = LED_PREFIX;
 		buf[1] = missile->led;
+        break;
 	case Fire:
 		buf[0] = MV_PREFIX;
 		buf[1] = 0x10;
