@@ -62,7 +62,7 @@ static struct usb_device_id id_table[] = {
 };
 MODULE_DEVICE_TABLE(usb, id_table);
 
-// Ein enum fängt bei 0 an.
+
 enum Direction {
 	Stop,
 	Down,
@@ -116,10 +116,11 @@ static void execute_order(struct usb_missile *missile, enum Which which)
 	case Led:
 		buf[0] = LED_PREFIX;
 		buf[1] = missile->led;
-        break;
+		break;
 	case Fire:
 		buf[0] = MV_PREFIX;
 		buf[1] = 0x10;
+        break;
 	default:
 		break;
 	}
