@@ -5,3 +5,6 @@
 
 ### Aktuelle
 - http://matthias.vallentin.net/blog/2007/04/writing-a-linux-kernel-driver-for-an-unknown-usb-device/
+
+### API zu usb-control-msg
+- https://www.kernel.org/doc/htmldocs/usb/API-usb-control-msg.html
