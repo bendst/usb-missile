@@ -6,5 +6,8 @@ all:
 	$(MAKE) -C $(KDIR) M=$$PWD
 endif
 
-clean:
+clobber:
 	rm -f *.o modules.* Module.* *.ko *.mod.c
+
+clean:
+	rm -f *.o modules.* Module.* *.mod.c
