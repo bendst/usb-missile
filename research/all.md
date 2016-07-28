@@ -1,3 +1,12 @@
+# Notizen zur Entwicklung
+
+## Für das Frontend:
+Zum generischen Auffinden der Devices folgenden Pfad verwenden:
+
+/sys/bus/usb/drivers/usb_missile/1-3:1.0/
+
+1-3 ist abhängig davon, an welchem Anschluss das Gerät eingestöpselt wurde. Der Link insgesamt ist allerdings von der Gestalt *:1.0.
+
 # Was wissen wir über das Gerät?
 
 Hardware-Device-IDs  
