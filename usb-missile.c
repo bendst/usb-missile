@@ -13,9 +13,8 @@
 #define function(name, cmdType) \
 	static ssize_t show_ ## name(struct device *dev, struct device_attribute *attr, char *buf) { \
 		struct usb_missile *missile = usb_get_intfdata(to_usb_interface(dev)); \
-		printk("%s\n", #name); \
 		if (cmdType == Movement) { \
-			return sprintf(buf, "Last Movement: %d\n",missile->direction); \
+			return sprintf(buf, "Last Movement: %d\n", missile->direction); \
 		} else if (cmdType == Led) { \
 			return sprintf(buf, "LED Status: %d\n", missile->led); \
 		} else { \
@@ -39,10 +38,16 @@
 #define action(name) function(name, Fire)
 #define led(name) function(name, Led)
 
-// TODO mögliche Fehler abfangen
-#define create(name) device_create_file(&interface->dev, &dev_attr_ ## name)
+#define create(name) result = device_create_file(&interface->dev, &dev_attr_ ## name); \
+	if (result != 0) { \
+		dev_err(&interface->dev, "Failed to create device %s\n", #name); \
+		goto error; \
+	}
+
 #define create_all_devices()  create(Stop); create(Down); create(Up); create(Left); create(Right); create(UpLeft); create(UpRight); create(DownLeft); create(DownRight); create(Fire); create(LedOn); create(LedOff)
+
 #define remove(name) device_remove_file(&interface->dev, &dev_attr_ ## name)
+
 #define remove_all_devices() remove(Stop); remove(Down); remove(Up); remove(Left); remove(Right); remove(UpLeft); remove(UpRight);  remove(DownLeft); remove(DownRight); remove(Fire); remove(LedOn); remove(LedOff)
 
 static struct usb_device_id id_table[] = {
