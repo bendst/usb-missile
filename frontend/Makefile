@@ -1,4 +1,7 @@
+all: main
+
+
 main:
 
 clean:
-	main
+	rm -f main
