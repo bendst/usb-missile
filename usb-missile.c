@@ -48,7 +48,8 @@
 
 #define remove(name) device_remove_file(&interface->dev, &dev_attr_ ## name)
 
-#define remove_all_devices() remove(Stop); remove(Down); remove(Up); remove(Left); remove(Right); remove(UpLeft); remove(UpRight);  remove(DownLeft); remove(DownRight); remove(Fire); remove(LedOn); remove(LedOff)
+#define remove_all_devices() remove(Stop); remove(Down); remove(Up); remove(Left); remove(Right); remove(UpLeft); remove(UpRight); remove(DownLeft); remove(DownRight); remove(Fire); remove(LedOn); remove(LedOff)
+
 
 static struct usb_device_id id_table[] = {
 	{ USB_DEVICE(VENDOR_ID, PRODUCT_ID) },
@@ -76,17 +77,19 @@ enum Led {
 };
 
 
+enum CmdType {
+	Led,
+	Movement,
+	Fire
+};
+
+
 struct usb_missile {
 	struct usb_device *	udev;
 	enum Direction		direction;
 	enum Led		led;
 };
 
-enum CmdType {
-	Led,
-	Movement,
-	Fire
-};
 
 static void execute_order(struct usb_missile *missile, enum CmdType cmdType)
 {
