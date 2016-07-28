@@ -10,7 +10,7 @@
 #define PRODUCT_ID 0x1010
 
 #define function(name, cmdType) \
-	static ssize_t show_ ## Action_ ## name(struct device *dev, struct device_attribute *attr, char *buf) { \
+	static ssize_t show_ ## name(struct device *dev, struct device_attribute *attr, char *buf) { \
 		struct usb_missile *missile = usb_get_intfdata(to_usb_interface(dev)); \
 		switch (cmdType) { \
 		case Movement: \
@@ -21,7 +21,7 @@
 			return sprintf(buf, "Nothing to read\n"); \
 		} \
 	} \
-	static ssize_t store_ ## Action_ ## name(struct device *dev, struct device_attribute *attr, const char *buf, size_t count) { \
+	static ssize_t store_ ## name(struct device *dev, struct device_attribute *attr, const char *buf, size_t count) { \
 		struct usb_missile *missile = usb_get_intfdata(to_usb_interface(dev)); \
 		switch (cmdType) { \
 		case Movement: \
@@ -36,7 +36,7 @@
 		execute_order(missile, cmdType); \
 		return count; \
 	} \
-	static DEVICE_ATTR(Action_ ## name, S_IRUSR | S_IWUSR, show_ ## Action_ ## name, store_ ## Action_ ## name);
+	static DEVICE_ATTR(Action_ ## name, S_IRUSR | S_IWUSR, show_ ## name, store_ ## name);
 
 
 #define movement(name) function(name, Movement)
