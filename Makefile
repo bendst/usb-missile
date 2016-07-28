@@ -1,13 +1,7 @@
-ifneq ($(KERNELRELEASE),)
-	obj-m := usb-missile.o
-else
-KDIR := /lib/modules/$$(uname -r)/build/ 
-all:
-	$(MAKE) -C $(KDIR) M=$$PWD
-endif
-
-clobber:
-	rm -f *.o modules.* Module.* *.ko *.mod.c
+all: 
+	$(MAKE) -C driver all 
+	$(MAKE) -C frontend all
 
 clean:
-	rm -f *.o modules.* Module.* *.mod.c
+	$(MAKE) -C driver clean
+	$(MAKE) -C frontend clean
