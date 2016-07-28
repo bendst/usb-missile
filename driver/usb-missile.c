@@ -3,7 +3,7 @@
 #include <linux/module.h>
 #include <linux/usb.h>
 
-
+#define FILE_PREFIX Action_
 #define DRIVER_AUTHOR "Florian Schwarz, Ben Stuart"
 #define DRIVER_DESC "USB Missile Launcher"
 
@@ -11,7 +11,7 @@
 #define PRODUCT_ID 0x1010
 
 #define function(name, cmdType) \
-	static ssize_t show_ ## name(struct device *dev, struct device_attribute *attr, char *buf) { \
+	static ssize_t show_ ## FILE_PREFIX ## name(struct device *dev, struct device_attribute *attr, char *buf) { \
 		struct usb_missile *missile = usb_get_intfdata(to_usb_interface(dev)); \
 		if (cmdType == Movement) { \
 			return sprintf(buf, "Last Movement: %d\n", missile->direction); \
@@ -21,7 +21,7 @@
 			return sprintf(buf, "Nothing to read\n"); \
 		} \
 	} \
-	static ssize_t store_ ## name(struct device *dev, struct device_attribute *attr, const char *buf, size_t count) { \
+	static ssize_t store_ ## FILE_PREFIX ## name(struct device *dev, struct device_attribute *attr, const char *buf, size_t count) { \
 		struct usb_missile *missile = usb_get_intfdata(to_usb_interface(dev)); \
 		if (cmdType == Movement) { \
 			missile->direction = name; \
@@ -31,14 +31,14 @@
 		execute_order(missile, cmdType); \
 		return count; \
 	} \
-	static DEVICE_ATTR(name, S_IRUSR | S_IWUSR, show_ ## name, store_ ## name);
+	static DEVICE_ATTR(FILE_PREFIX ## name, S_IRUSR | S_IWUSR, show_ ## FILE_PREFIX ## name, store_ ## FILE_PREFIX ## name);
 
 
 #define movement(name) function(name, Movement)
 #define action(name) function(name, Fire)
 #define led(name) function(name, Led)
 
-#define create(name) result = device_create_file(&interface->dev, &dev_attr_ ## name); \
+#define create(name) result = device_create_file(&interface->dev, &dev_attr_ ## FILE_PREFIX ## name); \
 	if (result != 0) { \
 		dev_err(&interface->dev, "Failed to create device %s\n", #name); \
 		goto error; \
@@ -46,7 +46,7 @@
 
 #define create_all_devices()  create(Stop); create(Down); create(Up); create(Left); create(Right); create(UpLeft); create(UpRight); create(DownLeft); create(DownRight); create(Fire); create(LedOn); create(LedOff)
 
-#define remove(name) device_remove_file(&interface->dev, &dev_attr_ ## name)
+#define remove(name) device_remove_file(&interface->dev, &dev_attr_ ## FILE_PREFIX ## name)
 
 #define remove_all_devices() remove(Stop); remove(Down); remove(Up); remove(Left); remove(Right); remove(UpLeft); remove(UpRight); remove(DownLeft); remove(DownRight); remove(Fire); remove(LedOn); remove(LedOff)
 
