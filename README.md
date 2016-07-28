@@ -14,5 +14,7 @@ Zum Verwenden des Treibers sind folgende Schritte notwenig:
 2. "sudo insmod usb-missile.ko"
 
 [ ] Die Zugriffsrechte auf das Gerät erfordern Root-Rechte. Lässt sich eventuell über udev lösen.
+    Neuere Version des Linux Kernel lassen keine höhere Berechtigung wie Usr  zu. 
+    Sollte eine allgemeinere Berechtigung eingestellt werden, schlägt die Kompilation fehl.
 
 ([ ] Abschuss lässt sich unterbrechen, was beim nächsten Abschuss zu merkwürdigem Verhalten führen kann. Eventuell Verantwortlichkeit beim Frontend belassen...)
