@@ -1,6 +1,6 @@
 PROG		=	main
 CC		=	gcc
-CFLAGS		=	-Wall
+CFLAGS		=	-Wall -Og
 LDFLAGS		=	-ludev
 
 all: $(PROG)
