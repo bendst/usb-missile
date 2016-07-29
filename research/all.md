@@ -26,3 +26,8 @@ LED on 0x03, 0x01
 
 Enthält Informationen über den Aufbau von usb_control_msg
 https://github.com/walac/pyusb/blob/9094c9b1ec2ac761dddce3c7d050fc4cd02e063d/usb/core.py#L997
+
+# Udev
+[Ausführliche Einführung in udev  und dessen Konfiguration von  opensuse](https://doc.opensuse.org/documentation/html/openSUSE_121/opensuse-reference/cha.udev.html)
+
+[PDF von Free Electrons](http://free-electrons.com/doc/udev.pdf)
