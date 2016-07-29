@@ -11,7 +11,7 @@
 
 #define FILE_PREFIX action_
 
-#define function2(prefix, name, cmdType) \
+#define function(prefix, name, cmdType) \
 	static ssize_t show_ ## name(struct device *dev, struct device_attribute *attr, char *buf) { \
 		struct usb_missile *missile = usb_get_intfdata(to_usb_interface(dev)); \
 		switch (cmdType) { \
@@ -41,17 +41,17 @@
 	static DEVICE_ATTR(prefix ## name, S_IRUSR | S_IWUSR, show_ ## name, store_ ## name);
 
 // Hilfsmakro, da Konkatenation Expansionen des Prefix-Makros unterbindet
-#define function1(prefix, name, cmdType) function2(prefix, name, cmdType)
+#define _function(prefix, name, cmdType) function(prefix, name, cmdType)
 
-#define movement(name) function1(FILE_PREFIX, name, Movement)
-#define action(name) function1(FILE_PREFIX, name, Fire)
-#define led(name) function1(FILE_PREFIX, name, Led)
+#define movement(name) _function(FILE_PREFIX, name, Movement)
+#define action(name) _function(FILE_PREFIX, name, Fire)
+#define led(name) _function(FILE_PREFIX, name, Led)
 
 // Hilfsmakros, da Konkatenation Expansionen des Prefix-Makros unterbindet
-#define getDevAttrName2(name, prefix) &dev_attr_ ## prefix ## name
-#define getDevAttrName1(name, prefix) getDevAttrName2(name, prefix)
+#define mangle_dev_attr_name(name, prefix) &dev_attr_ ## prefix ## name
+#define _mangle_dev_attr_name(name, prefix) mangle_dev_attr_name(name, prefix)
 
-#define create(name) result = device_create_file(&interface->dev, getDevAttrName1(name, FILE_PREFIX)); \
+#define create(name) result = device_create_file(&interface->dev, _mangle_dev_attr_name(name, FILE_PREFIX)); \
 	if (result != 0) { \
 		dev_err(&interface->dev, "Failed to create device %s\n", #name); \
 		goto error; \
@@ -59,7 +59,7 @@
 
 #define create_all_devices()  create(Stop); create(Down); create(Up); create(Left); create(Right); create(UpLeft); create(UpRight); create(DownLeft); create(DownRight); create(Fire); create(LedOn); create(LedOff)
 
-#define remove(name) device_remove_file(&interface->dev, getDevAttrName1(name, FILE_PREFIX))
+#define remove(name) device_remove_file(&interface->dev, _mangle_dev_attr_name(name, FILE_PREFIX))
 
 #define remove_all_devices() remove(Stop); remove(Down); remove(Up); remove(Left); remove(Right); remove(UpLeft); remove(UpRight); remove(DownLeft); remove(DownRight); remove(Fire); remove(LedOn); remove(LedOff)
 
