@@ -23,3 +23,5 @@ Das Paket "libudev-dev" muss installiert sein.
     Sollte eine allgemeinere Berechtigung eingestellt werden, schlägt die Kompilation fehl.
 
 ([ ] Abschuss lässt sich unterbrechen, was beim nächsten Abschuss zu merkwürdigem Verhalten führen kann. Eventuell Verantwortlichkeit beim Frontend belassen...)
+
+[ ] Memory Leak im Frontend. 2 fehlende frees ausgehend von "udev_enumerate_add_match_subsystem(enumerate, "usb");" und "udev_enumerate_scan_devices(enumerate);".
