@@ -1,7 +1,12 @@
-all: main
+PROG		=	main
+CC		=	gcc
+CFLAGS		=	-Wall
+LDFLAGS		=	-ludev
 
+all: $(PROG)
 
-main:
+$(PROG): $(PROG).c
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 clean:
-	rm -f main
+	rm -f $(PROG)
