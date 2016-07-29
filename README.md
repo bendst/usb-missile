@@ -1,5 +1,7 @@
 # Usb-Missile Anleitung
 
+Vorrausetzung: Das Paket "libudev-dev" muss zum Kompilieren von "main.c" installiert sein.
+
 Hilfeoptionen lassen sich mit
 ```
 make help
@@ -26,7 +28,6 @@ Führe zum Kompilieren
 make all
 ```
 im Ordner usb-missile aus.
-
 
 
 ## udev Regeln
@@ -60,5 +61,4 @@ sudo rmmode usb_missile
     Neuere Version des Linux Kernel lassen keine höhere Berechtigung wie Usr  zu. 
     Sollte eine allgemeinere Berechtigung eingestellt werden, schlägt die Kompilation fehl.
 
-([ ] Abschuss lässt sich unterbrechen, was beim nächsten Abschuss zu merkwürdigem Verhalten führen kann. 
-    Eventuell Verantwortlichkeit beim Frontend belassen...)
+[ ] Memory Leak im Frontend. 2 fehlende frees ausgehend von "udev_enumerate_add_match_subsystem(enumerate, "usb");" und "udev_enumerate_scan_devices(enumerate);".
