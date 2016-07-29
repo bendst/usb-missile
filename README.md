@@ -1,20 +1,36 @@
 # Usb-Missile Anleitung
 
-# Kompilation und Installation
+Hilfeoptionen lassen sich mit
+```
+make help
+```
+anzeigen.
+
+
+# Automatische Kompilation und Installation
+
+Die (De)Installtion kann automatisiert werden mit 
+```
+make install
+```
+und
+```
+make remove
+```
+
+
+# Manuelle Kompilation und Installation
+
 Führe zum Kompilieren 
 ```
 make all
 ```
 im Ordner usb-missile aus.
 
-Hilfeoptionen lassen sich mit
-```
-make help
-```
-anzeigen
 
 
 ## udev Regeln
+
 Zum Verwenden des Treibers sind folgende Schritte notwenig:
 
 1. Kopiere "10-missile.rules" nach "/etc/udev/rules.d/"
