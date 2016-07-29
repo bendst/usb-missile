@@ -1,11 +1,16 @@
 # usb-missile
 
-## udev Regeln
+## Treiber
+### Hinweise zum Einrichten
 Zum Verwenden des Treibers sind folgende Schritte notwenig:
 
 1. Kopiere "10-missile.rules" nach "/etc/udev/rules.d/"
 2. Schließe den USB-Raketenwerfer an
 3. Führe "sudo insmod usb-missile.ko" im Terminal aus 
+
+## Frontent
+### Hinweis zum Kompilieren
+Das Paket "libudev-dev" muss installiert sein.
 
 ## Bugs/Probleme: 
 [ ] Nach Aus- und Einstöpseln des Raketenwerfer muss das Treiber-Modul neu geladen werden:
