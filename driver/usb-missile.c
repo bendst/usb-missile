@@ -16,9 +16,9 @@
 		struct usb_missile *missile = usb_get_intfdata(to_usb_interface(dev)); \
 		switch (cmdType) { \
 		case Movement: \
-			return sprintf(buf, "Last Movement: %d\n", missile->direction); \
+			return sprintf(buf, "Last Movement:[%d]\n", missile->direction); \
 		case Led: \
-			return sprintf(buf, "LED Status: %d\n", missile->led); \
+			return sprintf(buf, "LED Status:[%d]\n", missile->led); \
 		default: \
 			return sprintf(buf, "Nothing to read\n"); \
 		} \
