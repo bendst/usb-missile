@@ -38,15 +38,15 @@
 	}
 
 #define write_device(fdName) retval = write(fdName, "1", 1); \
-			if (retval < 0) { \
-				error_at_line(0, errno, __FILE__, __LINE__,"write() failed"); \
-				result = EXIT_FAILURE; \
-				goto error_14; \
-			}
+	if (retval < 0) { \
+		error_at_line(0, errno, __FILE__, __LINE__, "write() failed"); \
+		result = EXIT_FAILURE; \
+		goto error_14; \
+	}
 
 #define close_device(fdName) retval = close(fdName); \
 	if (retval < 0) { \
-		error_at_line(0, errno, __FILE__, __LINE__,"close() failed"); \
+		error_at_line(0, errno, __FILE__, __LINE__, "close() failed"); \
 		result = EXIT_FAILURE; \
 	}
 
@@ -57,9 +57,9 @@ int openAction(char *actionPath, const char *actionName);
 int main(int argc, char *argv[])
 {
 	int result = EXIT_SUCCESS;
-	
+
 	printf("Willkommen zur Raketenwerfer-Steuerung!\n\n");
-	
+
 	// Überprüfe, ob Treiber geladen ist
 	struct stat s;
 	int retval = stat(PATH_TO_DRIVER, &s);
@@ -67,17 +67,16 @@ int main(int argc, char *argv[])
 		error_at_line(0, 0, __FILE__, __LINE__, "Couldn't find driver module");
 		error_at_line(EXIT_FAILURE, errno, __FILE__, __LINE__, "%s", PATH_TO_DRIVER);
 	}
-	
+
 	// Ermittle Pfad zu Sys-Devices
 	char *actionPath = NULL;
 	retval = getActionPath(&actionPath);
-	if (retval < 0) {
+	if (retval < 0)
 		error_at_line(EXIT_FAILURE, 0, __FILE__, __LINE__, "getActionPath()");
-	}
-	
+
 	// Sys-Devices öffnen
 	int fdUpLeft, fdUp, fdUpRight, fdLeft, fdStop, fdRight, fdDownLeft, fdDown, fdDownRight, fdLedOn, fdLedOff, fdFire;
-		
+
 	open_device(fdUpLeft, "action_UpLeft", error_1);
 	open_device(fdUp, "action_Up", error_2);
 	open_device(fdUpRight, "action_UpRight", error_3);
@@ -90,57 +89,11 @@ int main(int argc, char *argv[])
 	open_device(fdLedOn, "action_LedOn", error_10);
 	open_device(fdLedOff, "action_LedOff", error_11);
 	open_device(fdFire, "action_Fire", error_12);
-	
-	// Lese LED-Status ein 
-	// TODO - Experimental
-	char led;
-	char buffer[125];
-	memset(buffer, 0, sizeof(buffer));
-	retval = read(fdLedOn, buffer, sizeof(buffer));
-	if (retval < 0) {
-		perror("read");
-		led = '0'; 
-	} else {
-		retval = sscanf(buffer, "Last Movement:[%c]\n", &led);
-		if (retval < 0) {
-			perror("not found");
-			led = '0';
-		}
-	}
-	printf("led:%c\n%s\n", led, buffer);
 
-	/*
-	char led;
-	retval = read(fdLedOn, &led, 1);
-	if (retval == 1) {
-		for (int i=1; (led!=LED_DELIMITER) && (i<=LED_MAX_READ_CHARS); i++) {
-			retval = read(fdLedOn, &led, 1);
-			if (retval < 0) {
-				error_at_line(0, errno, __FILE__, __LINE__,"read() failed");
-				goto fallback;
-			}
-		}
-		if (led == LED_DELIMITER) {
-			retval = read(fdLedOn, &led, 1);
-			if (retval < 0) {
-				error_at_line(0, errno, __FILE__, __LINE__,"read() failed");
-				goto fallback;
-			}
-			if (led != '0' && led != '1') {
-				error_at_line(0, 0, __FILE__, __LINE__,"Read wrong Syntax in Led-Device");
-				goto fallback;
-			}
-		} else {
-			error_at_line(0, 0, __FILE__, __LINE__,"Read wrong Syntax in Led-Device");
-			goto fallback;
-		}
-	} else {
-	fallback:
-		printf("Warning: Couldn't read LED-Status. Assuming LED is off.\n\n");
-		led = '0';
-	}*/
-	
-	
+	char led = '0';
+	write_device(fdLedOff);
+	write_device(fdStop);
+
 	printf("Steuerung:\n");
 	printf("%c - Drehung nach oben-links\n", KEY_MV_UP_LEFT);
 	printf("%c - Drehung nach oben\n", KEY_MV_UP);
@@ -154,16 +107,16 @@ int main(int argc, char *argv[])
 	printf("%c - LED an/aus\n", KEY_LED);
 	printf("%c - Feuer\n", KEY_FIRE);
 	printf("%c - Beenden\n\n", KEY_EXIT);
-	
+
 	printf("Viel Spaß!\n\n");
-	
+
 	retval = system("stty cbreak -echo");
 	if (retval < 0) {
-		error_at_line(0, errno, __FILE__, __LINE__,"system() failed");
+		error_at_line(0, errno, __FILE__, __LINE__, "system() failed");
 		result = EXIT_FAILURE;
 		goto error_13;
 	}
-	
+
 	char pressedKey;
 	do {
 		pressedKey = getchar();
@@ -215,11 +168,11 @@ int main(int argc, char *argv[])
 			break;
 		}
 	} while (pressedKey != KEY_EXIT);
-	
+
 error_14:
 	retval = system("stty cooked echo");
 	if (retval < 0) {
-		error_at_line(0, errno, __FILE__, __LINE__,"system() failed");
+		error_at_line(0, errno, __FILE__, __LINE__, "system() failed");
 		result = EXIT_FAILURE;
 	}
 
@@ -250,18 +203,20 @@ error_2:
 	close_device(fdUpLeft);
 error_1:
 	free(actionPath);
-	
+
 	return result;
 }
 
 
-int getActionPath(char **actionPath) {
-	int retval = 0;	
-	
+int getActionPath(char **actionPath)
+{
+	int retval = 0;
+
 	// Suche das passende Gerät
 	struct udev *udev = udev_new();
+
 	if (udev == NULL) {
-		error_at_line(0, 0, __FILE__, __LINE__,"udev_new() failed");
+		error_at_line(0, 0, __FILE__, __LINE__, "udev_new() failed");
 		return -1;
 	}
 	struct udev_enumerate *enumerate = udev_enumerate_new(udev);
@@ -271,21 +226,21 @@ int getActionPath(char **actionPath) {
 	udev_enumerate_scan_devices(enumerate);
 	struct udev_list_entry *device = udev_enumerate_get_list_entry(enumerate);
 	if (device == NULL) {
-		error_at_line(0, 0, __FILE__, __LINE__,"Can't find matching device");
+		error_at_line(0, 0, __FILE__, __LINE__, "Can't find matching device");
 		udev_enumerate_unref(enumerate);
 		udev_unref(udev);
 		return -1;
 	}
-	
+
 	// Überprüfe, ob mehr als ein Raketenwerfer vorhanden
 	if (udev_list_entry_get_next(device) != NULL) {
-		error_at_line(0, 0, __FILE__, __LINE__,"Found more than one usb-missile-launcher. Please unplug surplus devices and restart this program");
+		error_at_line(0, 0, __FILE__, __LINE__, "Found more than one usb-missile-launcher. Please unplug surplus devices and restart this program");
 		free(*actionPath);
 		udev_enumerate_unref(enumerate);
 		udev_unref(udev);
 		return -1;
 	}
-	
+
 	// Ermittle Pfad zu den sysfs-Dateien
 	const char *path = udev_list_entry_get_name(device);
 	struct udev_device *dev = udev_device_new_from_syspath(udev, path);
@@ -296,14 +251,14 @@ int getActionPath(char **actionPath) {
 	int pathLen = strlen(sysPath) + strlen(busNum) + strlen(devPath) + 7;
 	*actionPath = calloc(pathLen + 1, sizeof(char));
 	if (*actionPath == NULL) {
-		error_at_line(0, errno, __FILE__, __LINE__,"calloc() failed");
+		error_at_line(0, errno, __FILE__, __LINE__, "calloc() failed");
 		udev_device_unref(dev);;
 		udev_enumerate_unref(enumerate);
 		udev_unref(udev);
 		return -1;
 	}
-	snprintf(*actionPath, pathLen+1, "%s/%s-%s:1.0/", sysPath, busNum ,devPath);
-	
+	snprintf(*actionPath, pathLen + 1, "%s/%s-%s:1.0/", sysPath, busNum, devPath);
+
 	udev_device_unref(dev);
 	udev_enumerate_unref(enumerate);
 	udev_unref(udev);
@@ -312,21 +267,22 @@ int getActionPath(char **actionPath) {
 }
 
 
-int openAction(char *actionPath, const char *actionName) {
+int openAction(char *actionPath, const char *actionName)
+{
 	char *buf;
 	int pathLen = strlen(actionPath);
 	int nameLen = strlen(actionName);
 	int filePathLen = pathLen + nameLen;
+
 	buf = calloc(filePathLen + 1, sizeof(char));
 	if (buf == NULL) {
-		error_at_line(0, errno, __FILE__, __LINE__,"calloc() failed");
+		error_at_line(0, errno, __FILE__, __LINE__, "calloc() failed");
 		return -1;
 	}
 	snprintf(buf, filePathLen + 1, "%s%s", actionPath, actionName);
 	int fd = open(buf, O_RDWR);
-	if (fd < 0) {
-		error_at_line(0, errno, __FILE__, __LINE__,"Can't open file \"%s\"", actionName);
-	}
+	if (fd < 0)
+		error_at_line(0, errno, __FILE__, __LINE__, "Can't open file \"%s\"", actionName);
 	free(buf);
 	return fd;
 }
