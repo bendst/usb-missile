@@ -38,7 +38,7 @@
 		execute_order(missile, cmdType); \
 		return count; \
 	} \
-	static DEVICE_ATTR(prefix ## name, S_IRUSR | S_IWUSR, show_ ## name, store_ ## name);
+	static DEVICE_ATTR(prefix ## name, S_IRUSR | S_IWUSR, show_ ## name, store_ ## name)
 
 // Hilfsmakro, da Konkatenation Expansionen des Prefix-Makros unterbindet
 #define _function(prefix, name, cmdType) function(prefix, name, cmdType)
@@ -48,20 +48,24 @@
 #define led(name) _function(FILE_PREFIX, name, Led)
 
 // Hilfsmakros, da Konkatenation Expansionen des Prefix-Makros unterbindet
-#define mangle_dev_attr_name(name, prefix) &dev_attr_ ## prefix ## name
-#define _mangle_dev_attr_name(name, prefix) mangle_dev_attr_name(name, prefix)
+#define _mangle_dev_attr_name(prefix, name) & dev_attr_ ## prefix ## name
+#define mangle_dev_attr_name(prefix, name) _mangle_dev_attr_name(prefix, name)
 
-#define create(name) result = device_create_file(&interface->dev, _mangle_dev_attr_name(name, FILE_PREFIX)); \
+
+#define create(name) result = device_create_file(&interface->dev, mangle_dev_attr_name(FILE_PREFIX, name)); \
 	if (result != 0) { \
 		dev_err(&interface->dev, "Failed to create device %s\n", #name); \
 		goto error; \
 	}
 
-#define create_all_devices()  create(Stop); create(Down); create(Up); create(Left); create(Right); create(UpLeft); create(UpRight); create(DownLeft); create(DownRight); create(Fire); create(LedOn); create(LedOff)
+#define create_all_devices()  create(Stop); create(Down); create(Up); create(Left); create(Right); create(UpLeft); \
+	create(UpRight); create(DownLeft); create(DownRight); create(Fire); create(LedOn); create(LedOff)
 
-#define remove(name) device_remove_file(&interface->dev, _mangle_dev_attr_name(name, FILE_PREFIX))
 
-#define remove_all_devices() remove(Stop); remove(Down); remove(Up); remove(Left); remove(Right); remove(UpLeft); remove(UpRight); remove(DownLeft); remove(DownRight); remove(Fire); remove(LedOn); remove(LedOff)
+#define remove(name) device_remove_file(&interface->dev, mangle_dev_attr_name(FILE_PREFIX, name))
+
+#define remove_all_devices() remove(Stop); remove(Down); remove(Up); remove(Left); remove(Right); remove(UpLeft); \
+	remove(UpRight); remove(DownLeft); remove(DownRight); remove(Fire); remove(LedOn); remove(LedOff)
 
 
 static struct usb_device_id id_table[] = {
