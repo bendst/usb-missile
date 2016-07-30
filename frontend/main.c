@@ -41,54 +41,56 @@ int openAction(int *fd, char *actionPath, const char *actionName);
 int main(int argc, char *argv[])
 {
 	
-	char c;
-	char *actionPath = NULL;
-	char led;
-	
 	printf("Willkommen beim Steuerprogramm zum USB-Raketen-Werfer!\n\n");
 	
-	// Überprüft, ob der Treiber geladen ist
+	// Überprüfe, ob Treiber geladen ist
 	struct stat s;
 	int retval = stat(PATH_TO_DRIVER, &s);
-	if (retval == -1) {
-		printf("Fehler: Auf das Verzeichnis %s kann nicht zugegriffen werden.\nIst das Treibermodul geladen?\n", PATH_TO_DRIVER);
-		return -1;
+	if (retval < 0) {
+		printf("Error in file %s in line %d: Can't access %s.\nMaybe driver module isn't loaded.\n", __FILE__, __LINE__, PATH_TO_DRIVER);
+		return retval;
 	}
 	
+	// Ermittle Pfad zu Sys-Devices
+	char *actionPath = NULL;
 	retval = getActionPath(&actionPath);
-	if (actionPath == NULL)
-		return -1;
+	if (retval < 0) return retval;
 	
 	// Sys-Devices öffnen
 	int fdUpLeft, fdUp, fdUpRight, fdLeft, fdStop, fdRight, fdDownLeft, fdDown, fdDownRight, fdLedOn, fdLedOff, fdFire;
 	retval = openAction(&fdUpLeft, actionPath, "action_UpLeft");
+	if (retval < 0) goto error_1;
 	retval = openAction(&fdUp, actionPath, "action_Up");
+	if (retval < 0) goto error_2;
 	retval = openAction(&fdUpRight, actionPath, "action_UpRight");
+	if (retval < 0) goto error_3;
 	retval = openAction(&fdLeft, actionPath, "action_Left");
+	if (retval < 0) goto error_4;
 	retval = openAction(&fdStop, actionPath, "action_Stop");
+	if (retval < 0) goto error_5;
 	retval = openAction(&fdRight, actionPath, "action_Right");
+	if (retval < 0) goto error_6;
 	retval = openAction(&fdDownLeft, actionPath, "action_DownLeft");
+	if (retval < 0) goto error_7;
 	retval = openAction(&fdDown, actionPath, "action_Down");
+	if (retval < 0) goto error_8;
 	retval = openAction(&fdDownRight, actionPath, "action_DownRight");
+	if (retval < 0) goto error_9;
 	retval = openAction(&fdLedOn, actionPath, "action_LedOn");
+	if (retval < 0) goto error_10;
 	retval = openAction(&fdLedOff, actionPath, "action_LedOff");
+	if (retval < 0) goto error_11;
 	retval = openAction(&fdFire, actionPath, "action_Fire");
-	/* TODO - Fehlerbehandlung für alle openActions;
-	if (retval) {
-		free(actionPath);
-		return -1;
-	}
-	*/
+	if (retval < 0) goto error_12;
 	
 	// Lese LED-Status ein 
-	char buf;
-	retval = read(fdLedOn, &buf, 1);
+	char led;
+	retval = read(fdLedOn, &led, 1);
 	// TODO - Fehlerbehandlung
-	while (buf != '0' && buf != '1') {
-		retval = read(fdLedOn, &buf, 1);
+	while (led != '0' && led != '1') {
+		retval = read(fdLedOn, &led, 1);
 		// TODO - Fehlerbehandlung
 	}
-	led = buf;
 	
 	printf("Steuerung:\n");
 	printf("%c - Drehung nach oben-links\n", KEY_MV_UP_LEFT);
@@ -109,9 +111,10 @@ int main(int argc, char *argv[])
 	retval = system("stty cbreak -echo");
 	// TODO - Fehlerbehandlung
 	
+	char pressedKey;
 	do {
-		c = getchar();
-		switch (c) {
+		pressedKey = getchar();
+		switch (pressedKey) {
 		case KEY_MV_UP_LEFT:
 			retval = write(fdUpLeft, "1", 1);
 			// TODO - Fehlerbehandlung
@@ -159,30 +162,44 @@ int main(int argc, char *argv[])
 		default:
 			break;
 		}
-	} while (c != KEY_EXIT);
+	} while (pressedKey != KEY_EXIT);
 	
+	retval = system("stty cooked echo");
+	// TODO - Fehlerbehandlung
+
 	// Sys-Devices schließen
-	retval = close(fdUpLeft);
-	retval = close(fdUp);
-	retval = close(fdUpRight);
-	retval = close(fdLeft);
-	retval = close(fdStop);
-	retval = close(fdRight);
-	retval = close(fdDownLeft);
-	retval = close(fdDown);
-	retval = close(fdDownRight);
-	retval = close(fdLedOn);
-	retval = close(fdLedOff);
 	retval = close(fdFire);
+error_12:
+	retval = close(fdLedOff);
+error_11:
+	retval = close(fdLedOn);
+error_10:
+	retval = close(fdDownRight);
+error_9:
+	retval = close(fdDown);
+error_8:
+	retval = close(fdDownLeft);
+error_7:
+	retval = close(fdRight);
+error_6:
+	retval = close(fdStop);
+error_5:
+	retval = close(fdLeft);
+error_4:
+	retval = close(fdUpRight);
+error_3:
+	retval = close(fdUp);
+error_2:
+	retval = close(fdUpLeft);
+error_1:
+	
 	/* TODO - Fehlerbehandlung
 	if (retval == -1) {	
 	} */
 	
 	free(actionPath);
-	retval = system("stty cooked echo");
-	// TODO - Fehlerbehandlung
 	
-	return 0;
+	return retval;
 }
 
 
@@ -191,12 +208,14 @@ int getActionPath(char **actionPath) {
 	struct udev *udev;
 	struct udev_enumerate *enumerate;
 	struct udev_list_entry *devices, *dev_list_entry;
-	struct udev_device *dev;	
+	struct udev_device *dev;
+	int retval = 0;	
 	
 	udev = udev_new();
 	if (udev == NULL) {
-		printf("Fehler: udev kann nicht erstellt werden.\n");
-		return -1;
+		printf("Error in file %s in line %d: Can't create udev.\n", __FILE__, __LINE__);
+		retval = -1;
+		return retval;
 	}
 	// Suche das passende Gerät
 	enumerate = udev_enumerate_new(udev);
@@ -207,10 +226,9 @@ int getActionPath(char **actionPath) {
 	devices = udev_enumerate_get_list_entry(enumerate);
 	
 	if (devices == NULL) {
-		printf("Fehler: Es wurde kein passendes Gerät gefunden.\n");
-		udev_enumerate_unref(enumerate);
-		udev_unref(udev);
-		return -1;
+		printf("Error in file %s in line %d: Can't find matching device.\n", __FILE__, __LINE__);
+		retval = -1;
+		goto error;
 	}
 	
 	i = 0;
@@ -219,14 +237,13 @@ int getActionPath(char **actionPath) {
 	// Ermittelt den Pfad zu den sysfs-Dateien
 	udev_list_entry_foreach(dev_list_entry, devices) {
 		if (i > 0) {
-			printf("Fehler: Es wurden mehr als ein USB-Raketenwerfer gefunden. Bitte entfernen Sie alle überschüssigen Raketenwerfer bis nur noch einer angeschlossen ist.\n");
-			udev_enumerate_unref(enumerate);
-			udev_unref(udev);
+			printf("Error in file %s in line %d: Found more than one usb-missile-launcher. Please unplug surplus devices.\n", __FILE__, __LINE__);
 			free(*actionPath);
-			return -1;
+			retval = -1;
+			goto error;
 		}
 		
-		int pathLen = 7; // initialer Wert kommt von "Füllstrings" (s. unten)
+		int pathLen = 7; // initialer Wert von Länge der "Füllzeichen" (s. unten)
 		int sysPathLen, busNumLen, devPathLen;
 		const char *path;
 		path = udev_list_entry_get_name(dev_list_entry);
@@ -243,11 +260,10 @@ int getActionPath(char **actionPath) {
 		
 		*actionPath = calloc(pathLen + 1, sizeof(char));
 		if (*actionPath == NULL) {
-			printf("Fehler: Out of memory.\n");
+			printf("Error in file %s in line %d: Out of memory.\n", __FILE__, __LINE__);
 			udev_device_unref(dev);
-			udev_enumerate_unref(enumerate);
-			udev_unref(udev);
-			return -1;
+			retval = -1;
+			goto error;
 		}
 		
 		strncpy(*actionPath, sysPath, sysPathLen);
@@ -258,13 +274,14 @@ int getActionPath(char **actionPath) {
 		strncat(*actionPath, ":1.0/", 5);
 		
 		udev_device_unref(dev);
-		i++;	
+		i++;
 	}
 	
+error:
 	udev_enumerate_unref(enumerate);
 	udev_unref(udev);
 
-	return 0;
+	return retval;
 }
 
 
@@ -274,14 +291,15 @@ int openAction(int *fd, char *actionPath, const char *actionName) {
 	int nameLen = strlen(actionName);
 	buf = calloc (pathLen + nameLen + 1, sizeof(char));
 	if (buf == NULL) {
-		printf("Error in file %s in lin %d: Out of Memory\n", __FILE__, __LINE__);
+		printf("Error in file %s in lin %d: Out of memory.\n", __FILE__, __LINE__);
 		return -1;
 	}
 	strncpy(buf, actionPath, pathLen);
 	strncat(buf, actionName, nameLen);
 	*fd = open(buf, O_RDWR);
 	if (*fd == -1) {
-		printf("ERROR in %s in line %d: Cannot open file \"%s\". %s.\n", __FILE__, __LINE__, actionName, strerror(errno));
+		printf("Error in file %s in line %d: Can't open file \"%s\". %s.\n", __FILE__, __LINE__, actionName, strerror(errno));
+		free(buf);
 		return -1;
 	}
 	free(buf);
