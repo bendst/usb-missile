@@ -29,6 +29,28 @@
 #define KEY_FIRE 'f'
 #define KEY_EXIT 'v'
 
+
+#define open_device(fdName, actionName, label) fdName = openAction(actionPath, actionName); \
+	if (fdName < 0) { \
+		error_at_line(0, 0, __FILE__, __LINE__, "openAction() failed"); \
+		result = EXIT_FAILURE; \
+		goto label; \
+	}
+
+#define write_device(fdName) retval = write(fdName, "1", 1); \
+			if (retval < 0) { \
+				error_at_line(0, errno, __FILE__, __LINE__,"write() failed"); \
+				result = EXIT_FAILURE; \
+				goto error_14; \
+			}
+
+#define close_device(fdName) retval = close(fdName); \
+	if (retval < 0) { \
+		error_at_line(0, errno, __FILE__, __LINE__,"close() failed"); \
+		result = EXIT_FAILURE; \
+	}
+
+
 int getActionPath(char **actionPath);
 int openAction(char *actionPath, const char *actionName);
 
@@ -55,80 +77,38 @@ int main(int argc, char *argv[])
 	
 	// Sys-Devices öffnen
 	int fdUpLeft, fdUp, fdUpRight, fdLeft, fdStop, fdRight, fdDownLeft, fdDown, fdDownRight, fdLedOn, fdLedOff, fdFire;
-	fdUpLeft = openAction(actionPath, "action_UpLeft");
-	if (fdUpLeft < 0) {
-		error_at_line(0, 0, __FILE__, __LINE__, "openAction() failed");
-		result = EXIT_FAILURE;
-		goto error_1;
-	}
-	fdUp = openAction(actionPath, "action_Up");
-	if (fdUp < 0) {
-		error_at_line(0, 0, __FILE__, __LINE__, "openAction() failed");
-		result = EXIT_FAILURE;
-		goto error_2;
-	}
-	fdUpRight = openAction(actionPath, "action_UpRight");
-	if (fdUpRight < 0) {
-		error_at_line(0, 0, __FILE__, __LINE__, "openAction() failed");
-		result = EXIT_FAILURE;
-		goto error_3;
-	}
-	fdLeft = openAction(actionPath, "action_Left");
-	if (fdLeft < 0) {
-		error_at_line(0, 0, __FILE__, __LINE__, "openAction() failed");
-		result = EXIT_FAILURE;
-		goto error_4;
-	}
-	fdStop = openAction(actionPath, "action_Stop");
-	if (fdStop < 0) {
-		error_at_line(0, 0, __FILE__, __LINE__, "openAction() failed");
-		result = EXIT_FAILURE;
-		goto error_5;
-	}
-	fdRight = openAction(actionPath, "action_Right");
-	if (fdRight < 0) {
-		error_at_line(0, 0, __FILE__, __LINE__, "openAction() failed");
-		result = EXIT_FAILURE;
-		goto error_6;
-	}
-	fdDownLeft = openAction(actionPath, "action_DownLeft");
-	if (fdDownLeft < 0) {
-		error_at_line(0, 0, __FILE__, __LINE__, "openAction() failed");
-		result = EXIT_FAILURE;
-		goto error_7;
-	}
-	fdDown = openAction(actionPath, "action_Down");
-	if (fdDown < 0) {
-		error_at_line(0, 0, __FILE__, __LINE__, "openAction() failed");
-		result = EXIT_FAILURE;
-		goto error_8;
-	}
-	fdDownRight = openAction(actionPath, "action_DownRight");
-	if (fdDownRight < 0) {
-		error_at_line(0, 0, __FILE__, __LINE__, "openAction() failed");
-		result = EXIT_FAILURE;
-		goto error_9;
-	}
-	fdLedOn = openAction(actionPath, "action_LedOn");
-	if (fdLedOn < 0) {
-		error_at_line(0, 0, __FILE__, __LINE__, "openAction() failed");
-		result = EXIT_FAILURE;
-		goto error_10;
-	}
-	fdLedOff = openAction(actionPath, "action_LedOff");
-	if (fdLedOff < 0) {
-		error_at_line(0, 0, __FILE__, __LINE__, "openAction() failed");
-		result = EXIT_FAILURE;
-		goto error_11;
-	}
-	fdFire = openAction(actionPath, "action_Fire");
-	if (fdFire < 0) {
-		error_at_line(0, 0, __FILE__, __LINE__, "openAction() failed");
-		result = EXIT_FAILURE;
-		goto error_12;
-	}
+		
+	open_device(fdUpLeft, "action_UpLeft", error_1);
+	open_device(fdUp, "action_Up", error_2);
+	open_device(fdUpRight, "action_UpRight", error_3);
+	open_device(fdLeft, "action_Left", error_4);
+	open_device(fdStop, "action_Stop", error_5);
+	open_device(fdRight, "action_Right", error_6);
+	open_device(fdDownLeft, "action_DownLeft", error_7);
+	open_device(fdDown, "action_Down", error_8);
+	open_device(fdDownRight, "action_DownRight", error_9);
+	open_device(fdLedOn, "action_LedOn", error_10);
+	open_device(fdLedOff, "action_LedOff", error_11);
+	open_device(fdFire, "action_Fire", error_12);
 	
 	// Lese LED-Status ein 
+	// TODO - Experimenntal
+	/*
+	char led;
+	char buffer[125];
+	memset(buffer, '0', sizeof(buffer));
+	retval = read(fdLedOn, buffer, sizeof(buffer));
+	if (retval < 0) {
+		perror("read");
+		led = '0'; 
+	} else {
+		retval = sscanf(buffer, "Last Movement [%c]\n", &led);
+		if (retval < 0) {
+			led = '0';
+		}
+	}
+	*/
+	
 	char led;
 	retval = read(fdLedOn, &led, 1);
 	if (retval == 1) {
@@ -159,6 +139,7 @@ int main(int argc, char *argv[])
 		led = '0';
 	}
 	
+	
 	printf("Steuerung:\n");
 	printf("%c - Drehung nach oben-links\n", KEY_MV_UP_LEFT);
 	printf("%c - Drehung nach oben\n", KEY_MV_UP);
@@ -187,103 +168,43 @@ int main(int argc, char *argv[])
 		pressedKey = getchar();
 		switch (pressedKey) {
 		case KEY_MV_UP_LEFT:
-			retval = write(fdUpLeft, "1", 1);
-			if (retval < 0) {
-				error_at_line(0, errno, __FILE__, __LINE__,"write() failed");
-				result = EXIT_FAILURE;
-				goto error_14;
-			}
+			write_device(fdUpLeft);
 			break;
 		case KEY_MV_UP:
-			retval = write(fdUp, "1", 1);
-			if (retval < 0) {
-				error_at_line(0, errno, __FILE__, __LINE__,"write() failed");
-				result = EXIT_FAILURE;
-				goto error_14;
-			}
+			write_device(fdUp);
 			break;
 		case KEY_MV_UP_RIGHT:
-			retval = write(fdUpRight, "1", 1);
-			if (retval < 0) {
-				error_at_line(0, errno, __FILE__, __LINE__,"write() failed");
-				result = EXIT_FAILURE;
-				goto error_14;
-			}
+			write_device(fdUpRight);
 			break;
 		case KEY_MV_LEFT:
-			retval = write(fdLeft, "1", 1);
-			if (retval < 0) {
-				error_at_line(0, errno, __FILE__, __LINE__,"write() failed");
-				result = EXIT_FAILURE;
-				goto error_14;
-			}
+			write_device(fdLeft);
 			break;
 		case KEY_MV_STOP:
-			retval = write(fdStop, "1", 1);
-			if (retval < 0) {
-				error_at_line(0, errno, __FILE__, __LINE__,"write() failed");
-				result = EXIT_FAILURE;
-				goto error_14;
-			}
+			write_device(fdStop);
 			break;
 		case KEY_MV_RIGHT:
-			retval = write(fdRight, "1", 1);
-			if (retval < 0) {
-				error_at_line(0, errno, __FILE__, __LINE__,"write() failed");
-				result = EXIT_FAILURE;
-				goto error_14;
-			}
+			write_device(fdRight);
 			break;
 		case KEY_MV_DOWN_LEFT:
-			retval = write(fdDownLeft, "1", 1);
-			if (retval < 0) {
-				error_at_line(0, errno, __FILE__, __LINE__,"write() failed");
-				result = EXIT_FAILURE;
-				goto error_14;
-			}
+			write_device(fdDownLeft);
 			break;
 		case KEY_MV_DOWN:
-			retval = write(fdDown, "1", 1);
-			if (retval < 0) {
-				error_at_line(0, errno, __FILE__, __LINE__,"write() failed");
-				result = EXIT_FAILURE;
-				goto error_14;
-			}
+			write_device(fdDown);
 			break;
 		case KEY_MV_DOWN_RIGHT:
-			retval = write(fdDownRight, "1", 1);
-			if (retval < 0) {
-				error_at_line(0, errno, __FILE__, __LINE__,"write() failed");
-				result = EXIT_FAILURE;
-				goto error_14;
-			}
+			write_device(fdDownRight);
 			break;
 		case KEY_LED:
 			if (led == '0') {
-				retval = write(fdLedOn, "1", 1);
-				if (retval < 0) {
-					error_at_line(0, errno, __FILE__, __LINE__,"write() failed");
-					result = EXIT_FAILURE;
-					goto error_14;
-				}
+				write_device(fdLedOn);
 				led = '1';
 			} else {
-				retval = write(fdLedOff, "1", 1);
-				if (retval < 0) {
-					error_at_line(0, errno, __FILE__, __LINE__,"write() failed");
-					result = EXIT_FAILURE;
-					goto error_14;
-				}
+				write_device(fdLedOff);
 				led = '0';
 			}
 			break;
 		case KEY_FIRE:
-			retval = write(fdFire, "1", 1);
-			if (retval < 0) {
-				error_at_line(0, errno, __FILE__, __LINE__,"write() failed");
-				result = EXIT_FAILURE;
-				goto error_14;
-			}
+			write_device(fdFire);
 			sleep(3);
 			break;
 		case KEY_EXIT:
@@ -303,158 +224,86 @@ error_14:
 
 	// Sys-Devices schließen
 error_13:
-	retval = close(fdFire);
-	if (retval < 0) {
-		error_at_line(0, errno, __FILE__, __LINE__,"close() failed");
-		result = EXIT_FAILURE;
-	}
+	close_device(fdFire);
 error_12:
-	retval = close(fdLedOff);
-	if (retval < 0) {
-		error_at_line(0, errno, __FILE__, __LINE__,"close() failed");
-		result = EXIT_FAILURE;
-	}
+	close_device(fdLedOff);
 error_11:
-	retval = close(fdLedOn);
-	if (retval < 0) {
-		error_at_line(0, errno, __FILE__, __LINE__,"close() failed");
-		result = EXIT_FAILURE;
-	}
+	close_device(fdLedOn);
 error_10:
-	retval = close(fdDownRight);
-	if (retval < 0) {
-		error_at_line(0, errno, __FILE__, __LINE__,"close() failed");
-		result = EXIT_FAILURE;
-	}
+	close_device(fdDownRight);
 error_9:
-	retval = close(fdDown);
-	if (retval < 0) {
-		error_at_line(0, errno, __FILE__, __LINE__,"close() failed");
-		result = EXIT_FAILURE;
-	}
+	close_device(fdDown);
 error_8:
-	retval = close(fdDownLeft);
-	if (retval < 0) {
-		error_at_line(0, errno, __FILE__, __LINE__,"close() failed");
-		result = EXIT_FAILURE;
-	}
+	close_device(fdDownLeft);
 error_7:
-	retval = close(fdRight);
-	if (retval < 0) {
-		error_at_line(0, errno, __FILE__, __LINE__,"close() failed");
-		result = EXIT_FAILURE;
-	}
+	close_device(fdRight);
 error_6:
-	retval = close(fdStop);
-	if (retval < 0) {
-		error_at_line(0, errno, __FILE__, __LINE__,"close() failed");
-		result = EXIT_FAILURE;
-	}
+	close_device(fdStop);
 error_5:
-	retval = close(fdLeft);
-	if (retval < 0) {
-		error_at_line(0, errno, __FILE__, __LINE__,"close() failed");
-		result = EXIT_FAILURE;
-	}
+	close_device(fdLeft);
 error_4:
-	retval = close(fdUpRight);
-	if (retval < 0) {
-		error_at_line(0, errno, __FILE__, __LINE__,"close() failed");
-		result = EXIT_FAILURE;
-	}
+	close_device(fdUpRight);
 error_3:
-	retval = close(fdUp);
-	if (retval < 0) {
-		error_at_line(0, errno, __FILE__, __LINE__,"close() failed");
-		result = EXIT_FAILURE;
-	}
+	close_device(fdUp);
 error_2:
-	retval = close(fdUpLeft);
-	if (retval < 0) {
-		error_at_line(0, errno, __FILE__, __LINE__,"close() failed");
-		result = EXIT_FAILURE;
-	}
+	close_device(fdUpLeft);
 error_1:
-	
 	free(actionPath);
+	
 	return result;
 }
 
 
 int getActionPath(char **actionPath) {
-	int i;
-	struct udev *udev;
-	struct udev_enumerate *enumerate;
-	struct udev_list_entry *devices, *dev_list_entry;
-	struct udev_device *dev;
 	int retval = 0;	
 	
-	udev = udev_new();
+	// Suche das passende Gerät
+	struct udev *udev = udev_new();
 	if (udev == NULL) {
 		error_at_line(0, 0, __FILE__, __LINE__,"udev_new() failed");
 		return -1;
 	}
-	// Suche das passende Gerät
-	enumerate = udev_enumerate_new(udev);
+	struct udev_enumerate *enumerate = udev_enumerate_new(udev);
 	udev_enumerate_add_match_subsystem(enumerate, "usb");
 	udev_enumerate_add_match_sysattr(enumerate, "idVendor", ID_VENDOR);
 	udev_enumerate_add_match_sysattr(enumerate, "idProduct", ID_PRODUCT);
 	udev_enumerate_scan_devices(enumerate);
-	devices = udev_enumerate_get_list_entry(enumerate);
-	
-	if (devices == NULL) {
+	struct udev_list_entry *device = udev_enumerate_get_list_entry(enumerate);
+	if (device == NULL) {
 		error_at_line(0, 0, __FILE__, __LINE__,"Can't find matching device");
-		retval = -1;
-		goto error;
+		udev_enumerate_unref(enumerate);
+		udev_unref(udev);
+		return -1;
 	}
 	
-	i = 0;
-	// Makro, expandiert zur Foreach-Schleife
-	// Überprüft, ob nur ein Raketenwerfer angeschlossen wurde
-	// Ermittelt den Pfad zu den sysfs-Dateien
-	udev_list_entry_foreach(dev_list_entry, devices) {
-		if (i > 0) {
-			error_at_line(0, 0, __FILE__, __LINE__,"Found more than one usb-missile-launcher. Please unplug surplus devices");
-			free(*actionPath);
-			retval = -1;
-			goto error;
-		}
-		
-		int pathLen = 7; // initialer Wert von Länge der "Füllzeichen" (s. unten)
-		int sysPathLen, busNumLen, devPathLen;
-		const char *path;
-		path = udev_list_entry_get_name(dev_list_entry);
-		dev = udev_device_new_from_syspath(udev, path);
-		
-		// Bestimme die Längen der einzelnen Teile
-		const char *sysPath = udev_device_get_syspath(dev);
-		const char *busNum = udev_device_get_sysattr_value(dev, "busnum");
-		const char *devPath = udev_device_get_sysattr_value(dev, "devpath");
-		sysPathLen = strlen(sysPath);
-		busNumLen = strlen(busNum);
-		devPathLen = strlen(devPath);
-		pathLen += sysPathLen + busNumLen + devPathLen;
-		
-		*actionPath = calloc(pathLen + 1, sizeof(char));
-		if (*actionPath == NULL) {
-			error_at_line(0, errno, __FILE__, __LINE__," ");
-			udev_device_unref(dev);
-			retval = -1;
-			goto error;
-		}
-		
-		strncpy(*actionPath, sysPath, sysPathLen);
-		strncat(*actionPath, "/", 1);
-		strncat(*actionPath, busNum, busNumLen);
-		strncat(*actionPath, "-", 1);
-		strncat(*actionPath, devPath, devPathLen);
-		strncat(*actionPath, ":1.0/", 5);
-		
-		udev_device_unref(dev);
-		i++;
+	// Überprüfe, ob mehr als ein Raketenwerfer vorhanden
+	if (udev_list_entry_get_next(device) != NULL) {
+		error_at_line(0, 0, __FILE__, __LINE__,"Found more than one usb-missile-launcher. Please unplug surplus devices and restart this program");
+		free(*actionPath);
+		udev_enumerate_unref(enumerate);
+		udev_unref(udev);
+		return -1;
 	}
 	
-error:
+	// Ermittle Pfad zu den sysfs-Dateien
+	const char *path = udev_list_entry_get_name(device);
+	struct udev_device *dev = udev_device_new_from_syspath(udev, path);
+	const char *sysPath = udev_device_get_syspath(dev);
+	const char *busNum = udev_device_get_sysattr_value(dev, "busnum");
+	const char *devPath = udev_device_get_sysattr_value(dev, "devpath");
+	// +7, wegen Füllzeichen (s. unten)
+	int pathLen = strlen(sysPath) + strlen(busNum) + strlen(devPath) + 7;
+	*actionPath = calloc(pathLen + 1, sizeof(char));
+	if (*actionPath == NULL) {
+		error_at_line(0, errno, __FILE__, __LINE__,"calloc() failed");
+		udev_device_unref(dev);;
+		udev_enumerate_unref(enumerate);
+		udev_unref(udev);
+		return -1;
+	}
+	snprintf(*actionPath, pathLen+1, "%s/%s-%s:1.0/", sysPath, busNum ,devPath);
+	
+	udev_device_unref(dev);
 	udev_enumerate_unref(enumerate);
 	udev_unref(udev);
 
@@ -466,18 +315,16 @@ int openAction(char *actionPath, const char *actionName) {
 	char *buf;
 	int pathLen = strlen(actionPath);
 	int nameLen = strlen(actionName);
-	buf = calloc(pathLen + nameLen + 1, sizeof(char));
+	int filePathLen = pathLen + nameLen;
+	buf = calloc(filePathLen + 1, sizeof(char));
 	if (buf == NULL) {
-		error_at_line(0, errno, __FILE__, __LINE__," ");
+		error_at_line(0, errno, __FILE__, __LINE__,"calloc() failed");
 		return -1;
 	}
-	strncpy(buf, actionPath, pathLen);
-	strncat(buf, actionName, nameLen);
+	snprintf(buf, filePathLen + 1, "%s%s", actionPath, actionName);
 	int fd = open(buf, O_RDWR);
 	if (fd < 0) {
 		error_at_line(0, errno, __FILE__, __LINE__,"Can't open file \"%s\"", actionName);
-		free(buf);
-		return -1;
 	}
 	free(buf);
 	return fd;
