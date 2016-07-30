@@ -92,23 +92,24 @@ int main(int argc, char *argv[])
 	open_device(fdFire, "action_Fire", error_12);
 	
 	// Lese LED-Status ein 
-	// TODO - Experimenntal
-	/*
+	// TODO - Experimental
 	char led;
 	char buffer[125];
-	memset(buffer, '0', sizeof(buffer));
+	memset(buffer, 0, sizeof(buffer));
 	retval = read(fdLedOn, buffer, sizeof(buffer));
 	if (retval < 0) {
 		perror("read");
 		led = '0'; 
 	} else {
-		retval = sscanf(buffer, "Last Movement [%c]\n", &led);
+		retval = sscanf(buffer, "Last Movement:[%c]\n", &led);
 		if (retval < 0) {
+			perror("not found");
 			led = '0';
 		}
 	}
-	*/
-	
+	printf("led:%c\n%s\n", led, buffer);
+
+	/*
 	char led;
 	retval = read(fdLedOn, &led, 1);
 	if (retval == 1) {
@@ -137,7 +138,7 @@ int main(int argc, char *argv[])
 	fallback:
 		printf("Warning: Couldn't read LED-Status. Assuming LED is off.\n\n");
 		led = '0';
-	}
+	}*/
 	
 	
 	printf("Steuerung:\n");
