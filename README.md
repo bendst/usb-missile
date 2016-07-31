@@ -89,12 +89,15 @@ Zwei fehlende Speicherfreigaben ausgehend von "udev_enumerate_add_match_subsyste
 
 # Quellen
 
+## Aktuelle
 - Usb Spezifikation: http://udev.sourcearchive.com/documentation/161-1/files.html
 - API zu usb-control-msg: https://www.kernel.org/doc/htmldocs/usb/API-usb-control-msg.html
 - usb_control_msg: https://github.com/walac/pyusb/blob/9094c9b1ec2ac761dddce3c7d050fc4cd02e063d/usb/core.py#L997
 - Udev: http://free-electrons.com/doc/udev.pdf
 - Udev-Einführung und -Konfiguration: https://doc.opensuse.org/documentation/html/openSUSE_121/opensuse-reference/cha.udev.html
 - USB-Raketenwerfer: http://matthias.vallentin.net/blog/2007/04/writing-a-linux-kernel-driver-for-an-unknown-usb-device/
+
+
 ## Veraltet
 - http://linux-usb.sourceforge.net/USB-guide/book1.html
 - http://tldp.org/LDP/lkmpg/2.6/html/lkmpg.html für den Linux 2.6 Kernel
