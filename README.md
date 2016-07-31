@@ -96,7 +96,6 @@ Zwei fehlende Speicherfreigaben ausgehend von "udev_enumerate_add_match_subsyste
 - usb_control_msg: https://github.com/walac/pyusb/blob/9094c9b1ec2ac761dddce3c7d050fc4cd02e063d/usb/core.py#L997
 - Udev: http://free-electrons.com/doc/udev.pdf
 - Udev-Einführung und -Konfiguration: https://doc.opensuse.org/documentation/html/openSUSE_121/opensuse-reference/cha.udev.html
-- Udev: https://doc.opensuse.org/documentation/html/openSUSE_114/opensuse-reference/cha.udev.html
 - libudev API: https://www.kernel.org/pub/linux/utils/kernel/hotplug/libudev/ch01.html
 - libudev Tutorial: http://www.signal11.us/oss/udev/
 
