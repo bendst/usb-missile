@@ -1,34 +1,26 @@
-# Usb-Missile Anleitung
+# USB-Missile Anleitung
 
-Vorrausetzung: Das Paket "libudev-dev" muss zum Kompilieren von "main.c" installiert sein.
+## Vorrausetzung
 
-Hilfeoptionen lassen sich mit
-```
-make help
-```
-anzeigen.
+Das Paket "libudev-dev" muss zum Kompilieren von "main.c" (Frontend) installiert sein.
 
+## Treibermodul einrichten
 
-## Automatische Kompilation und Installation
+Den USB-Raketenwerfer bitte erst nach dem Einrichten anschließen.
 
-Die (De)Installtion kann automatisiert werden mit 
+### a) Automatisch
+
+Zur automatischen Einrichtung folgenden Befehl eingeben:
 ```
 make install
 ```
-und
-```
-make remove
-```
 
+### b) Manuell
 
-## Manuelle Kompilation und Installation
-
-Führe zum Kompilieren 
+Zum Kompilieren des Treibers und des Frontends folgenden Befehl eingeben:
 ```
 make all
 ```
-im Ordner usb-missile aus.
-
 
 Zum Verwenden des Treibers sind folgende Schritte notwenig:
 
@@ -37,21 +29,40 @@ Zum Verwenden des Treibers sind folgende Schritte notwenig:
     ```
     sudo cp 10-missile.rules /etc/udev/rules.d/
     ```
+    
 2. Lade das Module.
    
-   ```
+    ```
     sudo insmod drivers/usb-missile.ko
     ```
-3. Schließe den USB-Raketenwerfer an.
 
+## Starten des Frontend-Programms
+
+Sobald die Einrichtung des Treibermoduls durchgeführt wurde, kann das Frontend-Programm mit folgendem Befehl gestartet werden: 
+```
+make start
+```
+
+## Entladen des Treibermoduls
+
+### a) Automatisch
+
+Folgenden Befehl eingeben:
+```
+make remove
+```
+
+### b) Manuel
 
 Das Modul kann wieder entladen werden mit:
 ```
 sudo rmmode usb_missile
 ```
 
-
-
+Die udev-Regel entfernen:
+```
+sudo rm /etc/udev/rules.d/10-missile.rules
+```
 
 # Notizen zur Entwicklung
 
