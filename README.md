@@ -1,6 +1,6 @@
 # USB-Missile Anleitung
 
-## Vorrausetzung
+## Voraussetzung
 
 Das Paket "libudev-dev" muss zum Kompilieren von "main.c" (Frontend) installiert sein.
 
@@ -22,7 +22,7 @@ Zum Kompilieren des Treibers und des Frontends folgenden Befehl eingeben:
 make all
 ```
 
-Zum Verwenden des Treibers sind folgende Schritte notwenig:
+Zum Verwenden des Treibers sind folgende Schritte notwendig:
 
 1. Kopiere "10-missile.rules" nach "/etc/udev/rules.d/"
 
@@ -92,7 +92,7 @@ Down 0x02, 0x01
 Up 0x02, 0x02
 Left  0x02, 0x04
 Right 0x02, 0x08
-Kobminationen aus Bewegung über Verundung des letzten Hexwertes. 
+Kombinationen aus Bewegung über Verundung des letzten Hexwertes. 
 Z.B. Down-Left 0x02, 0x05
 Fire 0x02, 0x10
 LED off 0x03, 0x00
