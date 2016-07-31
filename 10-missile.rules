@@ -1,2 +1,2 @@
 # De/Registriere alle Interfaces
-SUBSYSTEM=="usb", ATTRS{idVendor}=="2123", ATTRS{idProduct}=="1010", MODE="0666", RUN="/bin/sh -c 'echo $kernel:1.0 > /sys/bus/usb/drivers/usbhid/unbind; echo $kernel:1.0 > /sys/bus/usb/drivers/usb_missile/bind; chmod 0666 /sys/bus/usb/drivers/usb_missile/$kernel:1.0/action_*'"
+ACTION=="add", SUBSYSTEM=="usb", ATTRS{idVendor}=="2123", ATTRS{idProduct}=="1010", MODE="0666", RUN="/bin/sh -c 'echo $kernel > /sys/bus/usb/drivers/usbhid/unbind; echo $kernel > /sys/bus/usb/drivers/usb_missile/bind; chmod 0666 /sys/bus/usb/drivers/usb_missile/$kernel/action_*'"

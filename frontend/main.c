@@ -13,9 +13,6 @@
 #define ID_VENDOR "2123"
 #define ID_PRODUCT "1010"
 
-#define LED_DELIMITER '['
-#define LED_MAX_READ_CHARS 64
-
 #define KEY_MV_UP_LEFT 'q'
 #define KEY_MV_UP 'w'
 #define KEY_MV_UP_RIGHT 'e'
@@ -30,9 +27,9 @@
 #define KEY_EXIT 'v'
 
 
-#define open_device(fdName, actionName, label) fdName = openAction(actionPath, actionName); \
+#define open_device(fdName, actionName, label) fdName = open_action(actionPath, actionName); \
 	if (fdName < 0) { \
-		error_at_line(0, 0, __FILE__, __LINE__, "openAction() failed"); \
+		error_at_line(0, 0, __FILE__, __LINE__, "open_action() failed"); \
 		result = EXIT_FAILURE; \
 		goto label; \
 	}
@@ -51,8 +48,8 @@
 	}
 
 
-int getActionPath(char **actionPath);
-int openAction(char *actionPath, const char *actionName);
+static char *get_action_path();
+static int open_action(char *actionPath, const char *actionName);
 
 int main(int argc, char *argv[])
 {
@@ -69,14 +66,15 @@ int main(int argc, char *argv[])
 	}
 
 	// Ermittle Pfad zu Sys-Devices
-	char *actionPath = NULL;
-	retval = getActionPath(&actionPath);
-	if (retval < 0)
-		error_at_line(EXIT_FAILURE, 0, __FILE__, __LINE__, "getActionPath()");
+	char *actionPath = get_action_path();
+	if (actionPath == NULL)
+		error_at_line(EXIT_FAILURE, 0, __FILE__, __LINE__, "get_action_path()");
+
 
 	// Sys-Devices öffnen
 	int fdUpLeft, fdUp, fdUpRight, fdLeft, fdStop, fdRight, fdDownLeft, fdDown, fdDownRight, fdLedOn, fdLedOff, fdFire;
 
+	// Makro (s. Zeile 33)
 	open_device(fdUpLeft, "action_UpLeft", error_1);
 	open_device(fdUp, "action_Up", error_2);
 	open_device(fdUpRight, "action_UpRight", error_3);
@@ -90,7 +88,8 @@ int main(int argc, char *argv[])
 	open_device(fdLedOff, "action_LedOff", error_11);
 	open_device(fdFire, "action_Fire", error_12);
 
-	char led = '0';
+	int led = 0;
+	// Makro (s. Zeile 40)
 	write_device(fdLedOff);
 	write_device(fdStop);
 
@@ -149,13 +148,12 @@ int main(int argc, char *argv[])
 			write_device(fdDownRight);
 			break;
 		case KEY_LED:
-			if (led == '0') {
+			if (led == 0) {
 				write_device(fdLedOn);
-				led = '1';
 			} else {
 				write_device(fdLedOff);
-				led = '0';
 			}
+			led = !led;
 			break;
 		case KEY_FIRE:
 			write_device(fdFire);
@@ -208,16 +206,14 @@ error_1:
 }
 
 
-int getActionPath(char **actionPath)
+static inline char *get_action_path()
 {
-	int retval = 0;
-
 	// Suche das passende Gerät
 	struct udev *udev = udev_new();
 
 	if (udev == NULL) {
 		error_at_line(0, 0, __FILE__, __LINE__, "udev_new() failed");
-		return -1;
+		return NULL;
 	}
 
 	struct udev_enumerate *enumerate = udev_enumerate_new(udev);
@@ -234,16 +230,15 @@ int getActionPath(char **actionPath)
 		error_at_line(0, 0, __FILE__, __LINE__, "Can't find matching device");
 		udev_enumerate_unref(enumerate);
 		udev_unref(udev);
-		return -1;
+		return NULL;
 	}
 
 	// Überprüfe, ob mehr als ein Raketenwerfer vorhanden
 	if (udev_list_entry_get_next(device) != NULL) {
 		error_at_line(0, 0, __FILE__, __LINE__, "Found more than one usb-missile-launcher. Please unplug surplus devices and restart this program");
-		free(*actionPath);
 		udev_enumerate_unref(enumerate);
 		udev_unref(udev);
-		return -1;
+		return NULL;
 	}
 
 	// Ermittle Pfad zu den sysfs-Dateien
@@ -255,29 +250,29 @@ int getActionPath(char **actionPath)
 
 	// +7, wegen Füllzeichen (s. unten)
 	int pathLen = strlen(sysPath) + strlen(busNum) + strlen(devPath) + 7;
-	*actionPath = calloc(pathLen + 1, sizeof(char));
+	char *actionPath = calloc(pathLen + 1, sizeof(char));
 
 
-	if (*actionPath == NULL) {
+	if (actionPath == NULL) {
 		error_at_line(0, errno, __FILE__, __LINE__, "calloc() failed");
-		udev_device_unref(dev);;
+		udev_device_unref(dev);
 		udev_enumerate_unref(enumerate);
 		udev_unref(udev);
-		return -1;
+		return NULL;
 	}
 
 
-	snprintf(*actionPath, pathLen + 1, "%s/%s-%s:1.0/", sysPath, busNum, devPath);
+	snprintf(actionPath, pathLen + 1, "%s/%s-%s:1.0/", sysPath, busNum, devPath);
 
 	udev_device_unref(dev);
 	udev_enumerate_unref(enumerate);
 	udev_unref(udev);
 
-	return retval;
+	return actionPath;
 }
 
 
-int openAction(char *actionPath, const char *actionName)
+static inline int open_action(char *actionPath, const char *actionName)
 {
 	char *buf;
 	int pathLen = strlen(actionPath);
