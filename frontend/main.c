@@ -166,6 +166,10 @@ int main(int argc, char *argv[])
 			break;
 		}
 	} while (pressedKey != KEY_EXIT);
+	
+	// Makro (s. Zeile 40)
+	write_device(fdLedOff);
+	write_device(fdStop);
 
 error_14:
 	retval = system("stty cooked echo");
