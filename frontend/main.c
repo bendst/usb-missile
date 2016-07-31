@@ -219,12 +219,17 @@ int getActionPath(char **actionPath)
 		error_at_line(0, 0, __FILE__, __LINE__, "udev_new() failed");
 		return -1;
 	}
+
 	struct udev_enumerate *enumerate = udev_enumerate_new(udev);
+
 	udev_enumerate_add_match_subsystem(enumerate, "usb");
 	udev_enumerate_add_match_sysattr(enumerate, "idVendor", ID_VENDOR);
 	udev_enumerate_add_match_sysattr(enumerate, "idProduct", ID_PRODUCT);
 	udev_enumerate_scan_devices(enumerate);
+
+
 	struct udev_list_entry *device = udev_enumerate_get_list_entry(enumerate);
+
 	if (device == NULL) {
 		error_at_line(0, 0, __FILE__, __LINE__, "Can't find matching device");
 		udev_enumerate_unref(enumerate);
@@ -247,9 +252,12 @@ int getActionPath(char **actionPath)
 	const char *sysPath = udev_device_get_syspath(dev);
 	const char *busNum = udev_device_get_sysattr_value(dev, "busnum");
 	const char *devPath = udev_device_get_sysattr_value(dev, "devpath");
+
 	// +7, wegen Füllzeichen (s. unten)
 	int pathLen = strlen(sysPath) + strlen(busNum) + strlen(devPath) + 7;
 	*actionPath = calloc(pathLen + 1, sizeof(char));
+
+
 	if (*actionPath == NULL) {
 		error_at_line(0, errno, __FILE__, __LINE__, "calloc() failed");
 		udev_device_unref(dev);;
@@ -257,6 +265,8 @@ int getActionPath(char **actionPath)
 		udev_unref(udev);
 		return -1;
 	}
+
+
 	snprintf(*actionPath, pathLen + 1, "%s/%s-%s:1.0/", sysPath, busNum, devPath);
 
 	udev_device_unref(dev);
@@ -279,10 +289,13 @@ int openAction(char *actionPath, const char *actionName)
 		error_at_line(0, errno, __FILE__, __LINE__, "calloc() failed");
 		return -1;
 	}
+
 	snprintf(buf, filePathLen + 1, "%s%s", actionPath, actionName);
 	int fd = open(buf, O_RDWR);
+
 	if (fd < 0)
 		error_at_line(0, errno, __FILE__, __LINE__, "Can't open file \"%s\"", actionName);
+
 	free(buf);
 	return fd;
 }
