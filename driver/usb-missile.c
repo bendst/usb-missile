@@ -11,6 +11,9 @@
 
 #define FILE_PREFIX action_
 
+// Das Makro erstellt für die jeweiligen Funktionen des Gerät ein Device zum Lesen und Schreiben.
+// Wird in Gerät geschrieben, z.B. action_LedOn, wird die jeweilige store-Funktion ausgeführt, 
+// die dann das LED einschaltet. 
 #define function(prefix, name, cmdType) \
 	static ssize_t show_ ## name(struct device *dev, struct device_attribute *attr, char *buf) { \
 		struct usb_missile *missile = usb_get_intfdata(to_usb_interface(dev)); \
