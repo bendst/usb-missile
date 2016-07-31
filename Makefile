@@ -16,13 +16,13 @@ install: all
 	@sudo cp 10-missile.rules /etc/udev/rules.d/
 	@echo "Bitte schließe das Geräte an und drücke danach ENTER ..."
 	@read input
-	@sudo insmod drivers/usb-missile.ko
+	@sudo insmod driver/usb-missile.ko
 
 remove:
 	@echo "Entferne udev Regel ..."
 	@sudo rm -f /etc/udev/rules.d/10-missile.rules
 	@echo "Entferne Modul ..."
-	@sudo rmmode usb_misssile	
+	@sudo rmmod usb_misssile	
 
 start:
 	@echo "Starte Frontend ..."
@@ -30,7 +30,7 @@ start:
 
 clobber:
 	$(MAKE) -C driver clobber
-	$(MAKE) -C frontend clobber
+	$(MAKE) -C frontend  clean
 
 clean:
 	$(MAKE) -C driver clean
