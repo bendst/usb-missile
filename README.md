@@ -62,6 +62,10 @@ Zum generischen Auffinden der Devices folgenden Pfad verwenden:
 
 ## Ermittelte Spezifikationen des Geräts
 
+Im wesentlichen einem Python-Frontend aus dem Netz, das mit dem Standard-Treiber funktioniert, entnommen: 
+- https://github.com/nmilford/stormLauncher
+Zum Experimentieren mit USB-Control-Messages dieses Frontend umgeschrieben. Quellcode in "frontend-launcher.py" im ./research Verzeichnis.
+
 ### Hardware-Device-IDs  
 Vendor: 0x2123  
 Product: 0x1010
@@ -78,16 +82,13 @@ Fire 0x02, 0x10
 LED off 0x03, 0x00  
 LED on 0x03, 0x01
 
-# Frontends im Netz
-Frontends die mit dem Standard-Treiber funktionieren und aus dem wir die Parameter für die USB-Control-Messages bestimmt haben:
-- https://github.com/nmilford/stormLauncher (python)
-Zum Experimentieren mit den USB-Control-Messages dieses Frontend umgeschrieben. Quellcode liegt in ./research Ordner.
-
 # Bugs/Probleme: 
 Memory Leak im Frontend verursacht durch libudev.
 Zwei fehlende Speicherfreigaben ausgehend von "udev_enumerate_add_match_subsystem(enumerate, "usb");" und "udev_enumerate_scan_devices(enumerate);".
 
 # Quellen
+
+## Allgemein
 
 - sysfs-Devices: http://www.linuxjournal.com/article/7353
 - Usb Spezifikation: http://udev.sourcearchive.com/documentation/161-1/files.html
