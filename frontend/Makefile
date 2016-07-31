@@ -8,5 +8,5 @@ all: $(PROG)
 $(PROG): $(PROG).c
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-clean:
+clobber:
 	rm -f $(PROG)

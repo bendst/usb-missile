@@ -31,8 +31,7 @@ start:
 
 clobber:
 	$(MAKE) -C driver clobber
-	$(MAKE) -C frontend  clean
+	$(MAKE) -C frontend  clobber
 
 clean:
 	$(MAKE) -C driver clean
-	$(MAKE) -C frontend clean
