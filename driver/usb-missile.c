@@ -12,7 +12,7 @@
 #define FILE_PREFIX action_
 
 // Das Makro erstellt für die jeweiligen Funktionen des Geräts ein Device zum Lesen und Schreiben.
-// Sobald in ein Gerät geschrieben, z.B. action_LedOn, wird die zugehörige store-Funktion ausgeführt, 
+// Sobald in ein Gerät geschrieben wird, z.B. action_LedOn, wird die zugehörige store-Funktion ausgeführt, 
 // die dann die LED einschaltet. 
 #define function(prefix, name, cmdType) \
 	static ssize_t show_ ## name(struct device *dev, struct device_attribute *attr, char *buf) { \
