@@ -88,7 +88,7 @@ LED on 0x03, 0x01
 
 
 
-# Bugs/Probleme: 
+# Bugs und Probleme: 
 Memory Leak im Frontend verursacht durch libudev.
 Zwei fehlende Speicherfreigaben ausgehend von "udev_enumerate_add_match_subsystem(enumerate, "usb");" 
 und "udev_enumerate_scan_devices(enumerate);".
