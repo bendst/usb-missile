@@ -1,9 +1,9 @@
 help:
-	@echo "Folgende Optionen sind unterstützt:"
+	@echo "Folgende Optionen sind unterstützt:                      "
 	@echo "all          Kompiliere den Treiber und das Frontend     "
-	@echo "clean        Entferne alles bis auf die .ko Datei        "
-	@echo "clobber      Entferne ALLES bis auf die Source Dateien   "
-	@echo "install      Kompiliere und installiere das Modul        "
+	@echo "clean        Entferne alle Zwischenschritte              "
+	@echo "clobber      Entferne Zwischenschritte und Ergebnisse    "
+	@echo "install      Kompiliere und lade das Modul	        "
 	@echo "remove       Entferne das geladene Modul                 "
 	@echo "start        Starte das Frontend"
 
