@@ -63,7 +63,9 @@ Zum generischen Auffinden der Devices folgenden Pfad verwenden:
 ## Ermittelte Spezifikationen des Geräts
 
 Im wesentlichen einem Python-Frontend aus dem Netz, das mit dem Standard-Treiber funktioniert, entnommen: 
+
 - https://github.com/nmilford/stormLauncher
+
 Zum Experimentieren mit USB-Control-Messages dieses Frontend umgeschrieben. Quellcode in "frontend-launcher.py" im ./research Verzeichnis.
 
 ### Hardware-Device-IDs  
