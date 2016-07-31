@@ -14,7 +14,7 @@ all:
 install: all
 	@echo "Udev Regel wird kopiert ..."
 	@sudo cp 10-missile.rules /etc/udev/rules.d/
-	@echo "Installiere Modul ..."
+	@echo "Lade Modul ..."
 	@sudo insmod driver/usb-missile.ko
 	@echo "Bitte schließe das Geräte an ... Viel Spaß"
 	@echo "Zum Starten \"make start\" eingeben"
@@ -22,7 +22,7 @@ install: all
 remove:
 	@echo "Entferne udev Regel ..."
 	@sudo rm -f /etc/udev/rules.d/10-missile.rules
-	@echo "Entferne Modul ..."
+	@echo "Entlade Modul ..."
 	@sudo rmmod usb_missile	
 
 start:
